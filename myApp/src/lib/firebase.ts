@@ -3,15 +3,16 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
- const firebaseConfig = {
-    apiKey: "AIzaSyCjv4qfUb1BzqZ6foikrRMb3eP96tNRaN0",
-    authDomain: "svelte-course-5ccbb.firebaseapp.com",
-    projectId: "svelte-course-5ccbb",
-    storageBucket: "svelte-course-5ccbb.appspot.com",
-    messagingSenderId: "683597086774",
-    appId: "1:683597086774:web:babf8f94b30a602117d897",
-    measurementId: "G-SCXEMDDF2K"
-  };
+// Konfigurationen laddas från miljövariabler
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+};
 
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore();
