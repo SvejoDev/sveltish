@@ -1,8 +1,8 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
 import { getStorage } from "firebase/storage";
-import { writable } from "svelte/store";
+import { derived, writable, type Readable } from "svelte/store";
 
 // Firebase-konfigurationen laddas från miljövariabler
 const firebaseConfig = {
@@ -58,24 +58,46 @@ function userStore() {
 // Exportera user storen för att användas i andra delar av applikationen
 export const user = userStore();
 
+// Exportera funktionen docStore som tar en generisk typ T och en sökväg (path) som argument
 export function docStore<T>(
-  path: string,
+  path: string, // Sökvägen till dokumentet i Firestore
 ) {
-  let unsubscribe: () => void;
+  let unsubscribe: () => void; // En funktion för att avsluta prenumerationen på Firestore-uppdateringar
 
+  // Skapa en referens till dokumentet i Firestore baserat på den givna sökvägen
   const docRef = doc(db, path);
 
+  // Skapa en Svelte store som håller data av typen T eller null
   const { subscribe } = writable<T | null>(null, (set) => {
+    // Prenumerera på realtidsuppdateringar från dokumentet
     unsubscribe = onSnapshot(docRef, (snapshot) => {
+      // Uppdatera store med data från dokumentet
       set((snapshot.data() as T) ?? null);
     });
 
+    // Returnera en funktion som avslutar prenumerationen när store inte längre används
     return () => unsubscribe();
   });
 
+  // Returnera en store med subscribe-metoden och referens till dokumentet och dess id
   return {
-    subscribe,
-    ref: docRef,
-    id: docRef.id,
+    subscribe, // För att prenumerera på store-uppdateringar
+    ref: docRef, // Referens till Firestore-dokumentet
+    id: docRef.id, // Dokumentets id
   };
 }
+
+interface UserData {
+  username: string;
+  bio: string;
+  photoURL: string;
+  links: any[];
+}
+
+export const userData: Readable<UserData | null> = derived(user, ($user, set) => {
+  if ($user) {
+    return docStore<UserData>(`users/${$user.uid}`).subscribe(set);
+  } else {
+    set(null);
+  }
+});
