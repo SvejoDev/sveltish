@@ -1,32 +1,36 @@
 <script lang="ts">
-    import { auth } from "$lib/firebase";
-    import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+  // Importerar user store och Firebase-tjänster
+  import { user } from '$lib/firebase';
+  import { auth } from "$lib/firebase";
+  import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 
-    let loginInProgress = false;
+  // Variabel för att hålla koll på om en inloggning pågår
+  let loginInProgress = false;
 
-    async function signInWithGoogle() {
-        if (loginInProgress) return;
-
-        loginInProgress = true;
-        try {
-            const provider = new GoogleAuthProvider();
-            const user = await signInWithPopup(auth, provider);
-            console.log(user);
-        } catch (error) {
-            if (error instanceof Error) {
-                if ((error as any).code === 'auth/cancelled-popup-request') {
-                    console.error("Sign-in popup was cancelled because another popup was opened.", error);
-                } else {
-                    console.error("Error during sign in:", error);
-                }
-            } else {
-                console.error("An unknown error occurred during sign in.");
-            }
-        } finally {
-            loginInProgress = false;
-        }
+  // Funktion för att logga in med Google
+  async function signInWithGoogle() {
+    if (loginInProgress) return; // Om en inloggning redan pågår, gör inget
+    loginInProgress = true;
+    try {
+        const provider = new GoogleAuthProvider(); // Skapa en Google-inloggningsleverantör
+        await signInWithPopup(auth, provider); // Visa Google-inloggningspopup
+    } catch (error) {
+        console.error("Fel vid inloggning:", error); // Visa fel om inloggningen misslyckas
+    } finally {
+        loginInProgress = false; // Återställ loginInProgress när klart
     }
+  }
 </script>
 
 <h2>Login</h2>
-<button class="btn btn-primary" on:click={signInWithGoogle}>Sign in with Google</button>
+
+<!-- Visar olika innehåll beroende på om användaren är inloggad eller inte -->
+{#if $user}
+  <!-- Om användaren är inloggad -->
+  <h2 class="card-title">Welcome, {$user.displayName}</h2>
+  <p class="text-center text-success">Du är inloggad</p>
+  <button class="btn btn-warning" on:click={() => signOut(auth)}>Logga ut</button>
+{:else}
+  <!-- Om användaren inte är inloggad -->
+  <button class="btn btn-primary" on:click={signInWithGoogle}>Logga in med Google</button>
+{/if}

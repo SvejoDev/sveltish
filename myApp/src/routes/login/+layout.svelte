@@ -1,8 +1,10 @@
 <script lang="ts">
   import { page } from "$app/stores";
-    import AnimatedRoute from "$lib/components/AnimatedRoute.svelte";
-</script>
+  import AnimatedRoute from "$lib/components/AnimatedRoute.svelte";
+  import AuthCheck from "$lib/components/AuthCheck.svelte";
 
+</script>
+<AuthCheck>
 <nav class="flex justify-center my-6">
   <ul class="steps">
     <a href="/login" class="step step-primary">Sign In</a>
@@ -28,3 +30,4 @@
   </div>
 </main>
 </AnimatedRoute>
+</AuthCheck>
